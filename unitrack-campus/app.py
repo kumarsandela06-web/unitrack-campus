@@ -313,10 +313,9 @@ def edit_student_profile():
 # -----------------------------------------------------------------------------
 # TICKETING & COMPLAINTS WORKFLOW
 # -----------------------------------------------------------------------------
-@app.route('/')
-@app.route('/index')
-@app.route('/api/index')
-def home():
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def home(path=""):
     try:
         # Calculate metric card counts
         total_complaints = Complaint.query.count()
@@ -341,7 +340,6 @@ def home():
         resolved=resolved_count,
         tickets=recent_tickets
     )
-
 
 @app.route('/report', methods=['GET', 'POST'])
 @app.route('/report-problem', methods=['GET', 'POST'])
