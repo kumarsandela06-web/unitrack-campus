@@ -711,85 +711,90 @@ def export_csv():
 # DATABASE SEEDER (SEEDS ADMIN & DEPARTMENT STAFF)
 # -----------------------------------------------------------------------------
 def init_db():
-    with app.app_context():
-        db.create_all()
+    try:
+        with app.app_context():
+            db.create_all()
 
-        if not User.query.filter_by(username='admin').first():
-            db.session.add(User(
-                username='admin',
-                email='admin@campus.edu',
-                password_hash=generate_password_hash('admin123'),
-                role='Admin'
-            ))
+            if not User.query.filter_by(username='admin').first():
+                db.session.add(User(
+                    username='admin',
+                    email='admin@campus.edu',
+                    password_hash=generate_password_hash('admin123'),
+                    role='Admin'
+                ))
 
-        if not User.query.filter_by(username='elec_staff').first():
-            db.session.add(User(
-                username='elec_staff',
-                email='electric@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='Electrical'
-            ))
+            if not User.query.filter_by(username='elec_staff').first():
+                db.session.add(User(
+                    username='elec_staff',
+                    email='electric@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='Electrical'
+                ))
 
-        if not User.query.filter_by(username='it_staff').first():
-            db.session.add(User(
-                username='it_staff',
-                email='it@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='IT'
-            ))
+            if not User.query.filter_by(username='it_staff').first():
+                db.session.add(User(
+                    username='it_staff',
+                    email='it@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='IT'
+                ))
 
-        if not User.query.filter_by(username='plumb_staff').first():
-            db.session.add(User(
-                username='plumb_staff',
-                email='plumbing@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='Plumbing'
-            ))
+            if not User.query.filter_by(username='plumb_staff').first():
+                db.session.add(User(
+                    username='plumb_staff',
+                    email='plumbing@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='Plumbing'
+                ))
 
-        if not User.query.filter_by(username='clean_staff').first():
-            db.session.add(User(
-                username='clean_staff',
-                email='cleaning@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='Cleaning'
-            ))
+            if not User.query.filter_by(username='clean_staff').first():
+                db.session.add(User(
+                    username='clean_staff',
+                    email='cleaning@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='Cleaning'
+                ))
 
-        if not User.query.filter_by(username='ac_staff').first():
-            db.session.add(User(
-                username='ac_staff',
-                email='ac@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='AC/Cooling'
-            ))      
+            if not User.query.filter_by(username='ac_staff').first():
+                db.session.add(User(
+                    username='ac_staff',
+                    email='ac@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='AC/Cooling'
+                ))      
 
-        if not User.query.filter_by(username='internet_staff').first():
-            db.session.add(User(
-                username='internet_staff',
-                email='internet@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='Internet'
-            ))
+            if not User.query.filter_by(username='internet_staff').first():
+                db.session.add(User(
+                    username='internet_staff',
+                    email='internet@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='Internet'
+                ))
 
-        if not User.query.filter_by(username='furniture_staff').first():
-            db.session.add(User(
-                username='furniture_staff',
-                email='furniture@campus.edu',
-                password_hash=generate_password_hash('dept123'),
-                role='Department',
-                department_name='Furniture'
-            ))
+            if not User.query.filter_by(username='furniture_staff').first():
+                db.session.add(User(
+                    username='furniture_staff',
+                    email='furniture@campus.edu',
+                    password_hash=generate_password_hash('dept123'),
+                    role='Department',
+                    department_name='Furniture'
+                ))
 
-        db.session.commit()
+            db.session.commit()
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
 
-# Runs database table creation and account seeding on Vercel startup
-with app.app_context():
+# Safe startup call that will never crash the serverless container
+try:
     init_db()
+except Exception as e:
+    print(f"Failed to run init_db at startup: {e}")
 
 # Only runs when testing locally on your computer
 if __name__ == '__main__':
