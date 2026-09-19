@@ -31,6 +31,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # APP CONFIGURATION & REAL GMAIL SMTP (PORT 465 SSL)
 # -----------------------------------------------------------------------------
 import os
+import tempfile
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_mail import Mail, Message
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -42,7 +47,10 @@ app = Flask(
 )
 
 app.config['SECRET_KEY'] = 'UniTrack-super-secret-key-2026'
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(base_dir, 'campus_maintenance.db')}"
+
+# Serverless-safe SQLite database path in /tmp
+db_path = os.path.join(tempfile.gettempdir(), 'campus_maintenance.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Gmail SMTP Configuration
