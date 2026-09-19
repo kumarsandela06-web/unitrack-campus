@@ -2,6 +2,7 @@ import csv
 import io
 import os
 import random
+import tempfile
 from datetime import datetime
 
 from flask import (
@@ -28,16 +29,8 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
 # -----------------------------------------------------------------------------
-# APP CONFIGURATION & REAL GMAIL SMTP (PORT 465 SSL)
+# APP CONFIGURATION & DATABASE SETUP
 # -----------------------------------------------------------------------------
-import os
-import tempfile
-from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_mail import Mail, Message
-from werkzeug.security import generate_password_hash, check_password_hash
-
 base_dir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(
@@ -49,9 +42,19 @@ app = Flask(
 
 app.config['SECRET_KEY'] = 'UniTrack-super-secret-key-2026'
 
-# Safe SQLite database path in Vercel's writable /tmp directory
-db_path = os.path.join(tempfile.gettempdir(), 'campus_maintenance.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+# Read DATABASE_URL from Vercel environment variable (Neon PostgreSQL)
+raw_db_url = os.environ.get('DATABASE_URL', '')
+
+if raw_db_url:
+    # Fix dialect format required by modern SQLAlchemy
+    if raw_db_url.startswith("postgres://"):
+        raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = raw_db_url
+else:
+    # Fallback to local SQLite only when developing locally
+    db_path = os.path.join(tempfile.gettempdir(), 'campus_maintenance.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Gmail SMTP Configuration
@@ -74,22 +77,23 @@ login_manager.login_view = 'login'
 BUILDINGS = ['Block A', 'Block B', 'Block C', 'Computer Lab', 'Library', 'Hostel Block']
 CATEGORIES = ['Electrical', 'Furniture', 'Plumbing', 'IT', 'Internet', 'Cleaning', 'AC/Cooling']
 STATUSES = ['Pending', 'In Progress', 'Resolved']
+
 # -----------------------------------------------------------------------------
 # DATABASE MODELS
 # -----------------------------------------------------------------------------
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)  # Full Student Name / Staff Handle
-    course = db.Column(db.String(50), nullable=True)                  # B.Tech, BCA, MCA, etc.
-    department = db.Column(db.String(50), nullable=True)              # CSE, ECE, Mechanical, etc.
-    specialization = db.Column(db.String(80), nullable=True)          # AI, AIML, Data Science, etc.
-    year_semester = db.Column(db.String(50), nullable=True)           # e.g., 2nd Year (Sem 3)
-    mobile_no = db.Column(db.String(15), nullable=True)               # 10-digit phone
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    course = db.Column(db.String(50), nullable=True)
+    department = db.Column(db.String(50), nullable=True)
+    specialization = db.Column(db.String(80), nullable=True)
+    year_semester = db.Column(db.String(50), nullable=True)
+    mobile_no = db.Column(db.String(15), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(30), default='Student')                # Student, Department, Admin
-    department_name = db.Column(db.String(50), nullable=True)         # For Maintenance Staff accounts
+    role = db.Column(db.String(30), default='Student')
+    department_name = db.Column(db.String(50), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -104,10 +108,10 @@ class Complaint(db.Model):
     complaint_id = db.Column(db.String(20), unique=True, nullable=False)
     student_name = db.Column(db.String(100), nullable=False)
     student_email = db.Column(db.String(120), nullable=True)
-    department = db.Column(db.String(50), nullable=False)            # Course / Dept Info
+    department = db.Column(db.String(50), nullable=False)
     building = db.Column(db.String(50), nullable=False)
     room_no = db.Column(db.String(20), nullable=False)
-    category = db.Column(db.String(50), nullable=False)              # Maintenance Category
+    category = db.Column(db.String(50), nullable=False)
     priority = db.Column(db.String(20), default='Medium')
     problem = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(30), default='Pending')
@@ -331,17 +335,15 @@ def edit_student_profile():
 # -----------------------------------------------------------------------------
 # TICKETING & COMPLAINTS WORKFLOW
 # -----------------------------------------------------------------------------
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def home(path=""):
+@app.route('/')
+@app.route('/index')
+@app.route('/api/index')
+def home():
     try:
-        # Calculate metric card counts
         total_complaints = Complaint.query.count()
         pending_count = Complaint.query.filter_by(status='Pending').count()
         in_progress_count = Complaint.query.filter_by(status='In Progress').count()
         resolved_count = Complaint.query.filter_by(status='Resolved').count()
-
-        # Fetch the most recent 10 tickets for the campus activity table
         recent_tickets = Complaint.query.order_by(Complaint.id.desc()).limit(10).all()
     except Exception:
         total_complaints = 0
@@ -358,6 +360,7 @@ def home(path=""):
         resolved=resolved_count,
         tickets=recent_tickets
     )
+
 
 @app.route('/report', methods=['GET', 'POST'])
 @app.route('/report-problem', methods=['GET', 'POST'])
@@ -411,7 +414,6 @@ def report_problem():
 @app.route('/browse_problems')
 @login_required
 def browse_problems():
-    # Sorted ascending: CMP001, CMP002, ...
     complaints = Complaint.query.order_by(Complaint.id.asc()).all()
     user_supported_ids = [
         s.complaint_id for s in ComplaintSupport.query.filter_by(user_id=current_user.id).all()
@@ -433,7 +435,6 @@ def support_problem():
 
     complaint = Complaint.query.get_or_404(int(complaint_id))
 
-    # Reject upvoting if the issue is already resolved
     if complaint.status == 'Resolved':
         flash('This issue has already been resolved and closed.', 'warning')
         return redirect(request.referrer or url_for('browse_problems'))
@@ -456,12 +457,11 @@ def support_problem():
     return redirect(request.referrer or url_for('browse_problems'))
 
 
-@app.route('/ticket/delete/', methods=['POST'])
+@app.route('/ticket/delete/<int:complaint_id>', methods=['POST'])
 @login_required
 def delete_ticket(complaint_id):
     complaint = Complaint.query.get_or_404(complaint_id)
 
-    # Permission check: student owner or admin
     if current_user.role != 'Admin' and complaint.student_name != current_user.username:
         flash('Unauthorized action. You can only delete tickets you created.', 'danger')
         return redirect(request.referrer or url_for('student_dashboard'))
@@ -480,7 +480,6 @@ def delete_ticket(complaint_id):
 @app.route('/student_dashboard')
 @login_required
 def student_dashboard():
-    # Sorted ascending: CMP001, CMP002, ...
     my_complaints = Complaint.query.filter_by(student_name=current_user.username).order_by(Complaint.id.asc()).all()
     return render_template('student_dashboard.html', my_complaints=my_complaints)
 
@@ -491,7 +490,6 @@ def student_dashboard():
 @login_required
 def department_portal():
     dept_name = current_user.department_name or 'Electrical'
-    # Sorted ascending: CMP001, CMP002, ...
     complaints = Complaint.query.filter_by(category=dept_name).order_by(Complaint.id.asc()).all()
     return render_template('department_portal.html', complaints=complaints, statuses=STATUSES)
 
@@ -506,7 +504,6 @@ def update_status():
 
     complaint = Complaint.query.get_or_404(int(complaint_id))
 
-    # Reject updates if already resolved
     if complaint.status == 'Resolved':
         flash('This ticket is already resolved and locked from further edits.', 'warning')
         return redirect(url_for('department_portal'))
@@ -548,7 +545,6 @@ def admin_portal():
         flash('Admin authorization required.', 'danger')
         return redirect(url_for('home'))
 
-    # Student Filter & Search
     student_search = request.args.get('student_search', '').strip()
     selected_dept = request.args.get('department_filter', '').strip()
 
@@ -574,7 +570,6 @@ def admin_portal():
 
     all_departments = ['CSE', 'ECE', 'Mechanical', 'Civil', 'IT', 'Management']
 
-    # Staff / Department Directory Data
     staff_users = User.query.filter_by(role='Department').all()
     department_staff_records = []
     for staff in staff_users:
@@ -588,7 +583,6 @@ def admin_portal():
             'resolved_count': resolved_tickets
         })
 
-    # Maintenance & Cost Analytics (Sorted ascending)
     complaints = Complaint.query.order_by(Complaint.id.asc()).all()
     total = len(complaints)
     pending = len([c for c in complaints if c.status == 'Pending'])
@@ -642,7 +636,7 @@ def admin_portal():
     )
 
 
-@app.route('/admin/reassign/', methods=['POST'])
+@app.route('/admin/reassign/<int:complaint_id>', methods=['POST'])
 @login_required
 def admin_reassign(complaint_id):
     if current_user.role != 'Admin':
@@ -657,6 +651,7 @@ def admin_reassign(complaint_id):
         flash(f'Ticket {complaint.complaint_id} reassigned to {new_cat}.', 'success')
 
     return redirect(url_for('admin_portal'))
+
 
 @app.route('/export/csv')
 @app.route('/admin/export-csv')
@@ -678,7 +673,6 @@ def export_csv():
     for c in Complaint.query.order_by(Complaint.id.asc()).all():
         maint = Maintenance.query.filter_by(complaint_id=c.id).first()
         
-        # Format the date safely
         if c.created_at:
             date_str = c.created_at.strftime('%Y-%m-%d')
         elif c.date:
@@ -708,6 +702,7 @@ def export_csv():
         mimetype='text/csv',
         headers={'Content-Disposition': 'attachment; filename=campus_maintenance_report.csv'}
     )
+
 # -----------------------------------------------------------------------------
 # DATABASE SEEDER (SEEDS ADMIN & DEPARTMENT STAFF)
 # -----------------------------------------------------------------------------
@@ -720,7 +715,7 @@ def init_db():
                 db.session.add(User(
                     username='admin',
                     email='admin@campus.edu',
-                    password_hash=generate_password_hash('admin123'),
+                    password_hash=generate_password_hash('admin@123'),
                     role='Admin'
                 ))
 
@@ -728,7 +723,7 @@ def init_db():
                 db.session.add(User(
                     username='elec_staff',
                     email='electric@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='Electrical'
                 ))
@@ -737,7 +732,7 @@ def init_db():
                 db.session.add(User(
                     username='it_staff',
                     email='it@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='IT'
                 ))
@@ -746,7 +741,7 @@ def init_db():
                 db.session.add(User(
                     username='plumb_staff',
                     email='plumbing@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='Plumbing'
                 ))
@@ -755,7 +750,7 @@ def init_db():
                 db.session.add(User(
                     username='clean_staff',
                     email='cleaning@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='Cleaning'
                 ))
@@ -764,7 +759,7 @@ def init_db():
                 db.session.add(User(
                     username='ac_staff',
                     email='ac@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='AC/Cooling'
                 ))      
@@ -773,7 +768,7 @@ def init_db():
                 db.session.add(User(
                     username='internet_staff',
                     email='internet@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='Internet'
                 ))
@@ -782,7 +777,7 @@ def init_db():
                 db.session.add(User(
                     username='furniture_staff',
                     email='furniture@campus.edu',
-                    password_hash=generate_password_hash('dept123'),
+                    password_hash=generate_password_hash('dept@123'),
                     role='Department',
                     department_name='Furniture'
                 ))
@@ -791,12 +786,10 @@ def init_db():
     except Exception as e:
         print(f"Database initialization warning: {e}")
 
-# Safe startup call that will never crash the serverless container
 try:
     init_db()
 except Exception as e:
     print(f"Failed to run init_db at startup: {e}")
 
-# Only runs when testing locally on your computer
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
