@@ -20,7 +20,7 @@
                     <!-- Course -->
                     <div class="col-md-6">
                         <label class="kpi-label mb-1">Course</label>
-                        <select name="course" class="form-select bg-dark text-light border-secondary" required>
+                        <select id="courseSelect" name="course" class="form-select bg-dark text-light border-secondary" required onchange="handleCourseChange()">
                             <option value="" disabled selected>Select Course</option>
                             <option value="B.Tech">B.Tech</option>
                             <option value="BCA">BCA</option>
@@ -36,17 +36,11 @@
                         <label class="kpi-label mb-1">Department</label>
                         <select id="departmentSelect" name="department" class="form-select bg-dark text-light border-secondary" required onchange="toggleCseSpecialization()">
                             <option value="" disabled selected>Select Department</option>
-                            <option value="CSE">Computer Science & Engineering (CSE)</option>
-                            <option value="ECE">Electronics & Communication (ECE)</option>
-                            <option value="Mechanical">Mechanical Engineering</option>
-                            <option value="Civil">Civil Engineering</option>
-                            <option value="IT">Information Technology (IT)</option>
-                            <option value="Management">Management Studies</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- CSE Specialization (Hidden by default, shows only if CSE is picked) -->
+                <!-- CSE Specialization (Shows only when CSE is picked under B.Tech/M.Tech) -->
                 <div class="mb-3" id="specializationContainer" style="display: none;">
                     <label class="kpi-label mb-1 text-info">CSE Specialization</label>
                     <select id="specializationSelect" name="specialization" class="form-select bg-dark text-light border-info">
@@ -106,13 +100,75 @@
             </form>
 
             <div class="text-center mt-3">
-                <a href="{{ url_for('login') }}" class="text-info small text-decoration-none">Already registered? Sign In</a>
+                <a href="{{ url_for('login') }}" class="text-info small text-decoration-none">Already registered? Login</a>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+const courseDepartmentMap = {
+    'B.Tech': [
+        { value: 'CSE', text: 'Computer Science & Engineering (CSE)' },
+        { value: 'ECE', text: 'Electronics & Communication (ECE)' },
+        { value: 'Mechanical', text: 'Mechanical Engineering' },
+        { value: 'Civil', text: 'Civil Engineering' },
+        { value: 'IT', text: 'Information Technology (IT)' },
+        { value: 'Electrical', text: 'Electrical Engineering' }
+    ],
+    'BCA': [
+        { value: 'Computer Applications', text: 'Computer Applications' },
+        { value: 'Software Development', text: 'Software Development' },
+        { value: 'Data Science & Analytics', text: 'Data Science & Analytics' },
+        { value: 'Cloud & Cyber Security', text: 'Cloud & Cyber Security' },
+        { value: 'Web Technologies', text: 'Web Technologies' }
+    ],
+    'MCA': [
+        { value: 'Computer Applications', text: 'Computer Applications' },
+        { value: 'Advanced Software Engineering', text: 'Advanced Software Engineering' },
+        { value: 'AI & Data Intelligence', text: 'AI & Data Intelligence' },
+        { value: 'Cyber Security & Forensics', text: 'Cyber Security & Forensics' }
+    ],
+    'M.Tech': [
+        { value: 'CSE', text: 'Computer Science & Engineering (CSE)' },
+        { value: 'VLSI & Embedded Systems', text: 'VLSI & Embedded Systems' },
+        { value: 'Thermal Engineering', text: 'Thermal Engineering' },
+        { value: 'Structural Engineering', text: 'Structural Engineering' }
+    ],
+    'BBA': [
+        { value: 'General Management', text: 'General Management' },
+        { value: 'Marketing Management', text: 'Marketing Management' },
+        { value: 'Finance & Accounts', text: 'Finance & Accounts' },
+        { value: 'Human Resource Management', text: 'Human Resource Management' }
+    ],
+    'MBA': [
+        { value: 'Finance', text: 'Finance' },
+        { value: 'Marketing', text: 'Marketing' },
+        { value: 'Human Resources', text: 'Human Resources' },
+        { value: 'Business Analytics', text: 'Business Analytics' },
+        { value: 'Supply Chain & Operations', text: 'Supply Chain & Operations' }
+    ]
+};
+
+function handleCourseChange() {
+    const courseSelect = document.getElementById('courseSelect');
+    const deptSelect = document.getElementById('departmentSelect');
+    const selectedCourse = courseSelect.value;
+
+    deptSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
+
+    if (selectedCourse && courseDepartmentMap[selectedCourse]) {
+        courseDepartmentMap[selectedCourse].forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.value;
+            opt.textContent = item.text;
+            deptSelect.appendChild(opt);
+        });
+    }
+
+    toggleCseSpecialization();
+}
+
 function toggleCseSpecialization() {
     const dept = document.getElementById('departmentSelect').value;
     const specBox = document.getElementById('specializationContainer');
