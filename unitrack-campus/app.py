@@ -314,6 +314,8 @@ def edit_student_profile():
 # TICKETING & COMPLAINTS WORKFLOW
 # -----------------------------------------------------------------------------
 @app.route('/')
+@app.route('/index')
+@app.route('/api/index')
 def home():
     try:
         # Calculate metric card counts
