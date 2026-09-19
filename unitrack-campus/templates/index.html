@@ -397,27 +397,6 @@
 </style>
 
 <script>
-  (function () {
-    const loader = document.getElementById('unitrack-loader');
-    if (!loader) return;
 
-    // Check if the user has already seen the intro loader in this browser session
-    const hasSeenLoader = sessionStorage.getItem('unitrack_intro_loaded');
-
-    if (hasSeenLoader) {
-      // If already visited, remove the loader instantly without waiting
-      loader.remove();
-    } else {
-      // First time visiting the site: mark as seen and show 5-second animation
-      sessionStorage.setItem('unitrack_intro_loaded', 'true');
-
-      setTimeout(() => {
-        loader.classList.add('hidden');
-        setTimeout(() => {
-          loader.remove();
-        }, 650); // Clean up DOM after fade transition completes
-      }, 0); // 1 seconds
-    }
-  })();
 </script>
 {% endblock %}
