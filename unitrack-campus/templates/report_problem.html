@@ -8,6 +8,7 @@
         text-transform: uppercase;
         letter-spacing: -0.5px;
         margin-top: 30px;
+        color: #f8fafc;
     }
 
     .page-sub {
@@ -16,13 +17,14 @@
         margin-bottom: 25px;
     }
 
-    /* Cream Paper Ticket Card */
+    /* Dark Slate Card matching the UniTrack dashboard */
     .ticket-card {
-        background-color: #fcfaf5;
+        background-color: #112240;
+        border: 1px solid #1e3a5f;
         border-radius: 16px;
         padding: 34px 38px;
-        color: #1e293b;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        color: #f8fafc;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
         position: relative;
     }
 
@@ -30,47 +32,66 @@
         position: absolute;
         top: 28px;
         right: 38px;
-        border: 1px solid #ef4444;
-        color: #ef4444;
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        background: rgba(56, 189, 248, 0.1);
+        color: #38bdf8;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 1px;
-        padding: 4px 10px;
-        border-radius: 6px;
+        padding: 5px 12px;
+        border-radius: 9999px;
     }
 
     .form-label-custom {
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.8px;
-        color: #64748b;
+        color: #94a3b8;
         text-transform: uppercase;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
+        display: block;
     }
 
     .form-control-custom, .form-select-custom {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
+        background-color: #0b1727 !important;
+        border: 1px solid #1e3a5f;
         border-radius: 8px;
         padding: 10px 14px;
         font-size: 14px;
-        color: #0f172a;
+        color: #f8fafc !important;
         width: 100%;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-control-custom::placeholder {
+        color: #64748b;
     }
 
     .form-control-custom:focus, .form-select-custom:focus {
         border-color: #38bdf8;
+        box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         outline: none;
     }
 
+    .form-select-custom option {
+        background-color: #0b1727;
+        color: #f8fafc;
+    }
+
     .btn-register-submit {
-        background-color: #0f2744;
-        color: #ffffff;
+        background-color: #38bdf8;
+        color: #0b1727;
         font-weight: 700;
         padding: 10px 24px;
-        border-radius: 8px;
+        border-radius: 9999px;
         border: none;
         font-size: 14px;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-register-submit:hover {
+        background-color: #7dd3fc;
+        transform: translateY(-1px);
     }
 </style>
 
@@ -86,18 +107,11 @@
                 <!-- Row 1: Student Name & Department -->
                 <div class="col-md-6">
                     <label class="form-label-custom">Student Name</label>
-                    <input type="text" name="student_name" class="form-control-custom" placeholder="e.g. Rahul Sharma" value="{{ current_user.username if current_user.is_authenticated else '' }}" required>
+                    <input type="text" name="student_name" class="form-control-custom" placeholder="e.g. Rahul Sharma" value="{{ current_user.username if current_user.is_authenticated else '' }}" readonly>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label-custom">Department</label>
-                    <select name="department" class="form-select form-select-custom" required>
-                        <option value="" disabled selected>Select department</option>
-                        <option value="BCA">BCA</option>
-                        <option value="B.Tech">B.Tech</option>
-                        <option value="MCA">MCA</option>
-                        <option value="BBA">BBA</option>
-                        <option value="B.Sc">B.Sc</option>
-                    </select>
+                    <label class="form-label-custom">Department / Course</label>
+                    <input type="text" name="department" class="form-control-custom" value="{{ (current_user.course ~ ' - ' ~ current_user.department) if (current_user.is_authenticated and current_user.course) else 'General' }}" readonly>
                 </div>
 
                 <!-- Row 2: Building & Room No -->
@@ -112,7 +126,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label-custom">Room No.</label>
-                    <input type="text" name="room_no" class="form-control-custom" placeholder="e.g. 204" required>
+                    <input type="text" name="room_no" class="form-control-custom" placeholder="e.g. 204 or Lab 3" required>
                 </div>
 
                 <!-- Row 3: Category & Priority -->
@@ -128,7 +142,6 @@
                 <div class="col-md-6">
                     <label class="form-label-custom">Priority</label>
                     <select name="priority" class="form-select form-select-custom" required>
-                        <option value="" disabled selected>Select priority</option>
                         <option value="Low">Low</option>
                         <option value="Medium" selected>Medium</option>
                         <option value="High">High</option>
@@ -138,12 +151,12 @@
                 <!-- Row 4: Problem Description -->
                 <div class="col-12">
                     <label class="form-label-custom">Problem Description</label>
-                    <textarea name="problem" class="form-control-custom" rows="3" placeholder="Describe what's wrong, e.g. 'Ceiling fan makes a loud noise and doesn't reach full speed.'" required></textarea>
+                    <textarea name="problem" class="form-control-custom" rows="3" placeholder="Describe what is wrong (e.g. Ceiling fan makes a loud noise and does not reach full speed)" required></textarea>
                 </div>
 
                 <div class="col-12 d-flex align-items-center gap-3 pt-2">
                     <button type="submit" class="btn-register-submit">Register complaint</button>
-                    <span class="text-muted small">Date & ticket ID are assigned automatically on submit.</span>
+                    <span class="text-secondary small">Date & ticket ID are assigned automatically on submit.</span>
                 </div>
             </div>
         </form>
