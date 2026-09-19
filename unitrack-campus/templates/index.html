@@ -1,21 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- UniTrack Fullscreen Preloader -->
-<div id="unitrack-loader">
-  <div class="loader-content text-center">
-    <div class="logo-pulse mb-3">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="UniTrack Logo" class="loader-logo" onerror="this.style.display='none'; document.getElementById('loader-fallback-icon').style.display='inline-block';">
-      <div id="loader-fallback-icon" class="fallback-icon" style="display: none;">🎓</div>
-    </div>
-    <h3 class="loader-brand mb-1">UniTrack</h3>
-    <p class="loader-tagline mb-3">Smart Campus Portal</p>
-    <div class="spinner-track">
-      <div class="spinner-bar"></div>
-    </div>
-  </div>
-</div>
-
 <div class="homepage-single-page px-4 px-lg-5">
   <div class="container-fluid max-layout-width d-flex flex-column h-100 justify-content-evenly py-2">
     
@@ -146,92 +131,20 @@
 </div>
 
 <style>
-  /* Loader Overlay */
-  #unitrack-loader {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #060b18;
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.6s ease, visibility 0.6s ease;
-  }
-
-  #unitrack-loader.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .loader-logo {
-    width: 65px;
-    height: 65px;
-    object-fit: contain;
-    animation: loaderPulse 1.8s infinite ease-in-out;
-  }
-
-  .fallback-icon {
-    font-size: 3rem;
-    animation: loaderPulse 1.8s infinite ease-in-out;
-  }
-
-  .loader-brand {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-  }
-
-  .loader-tagline {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #38bdf8;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-  }
-
-  .spinner-track {
-    width: 160px;
-    height: 4px;
-    background: rgba(56, 189, 248, 0.15);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 0 auto;
-    position: relative;
-  }
-
-  .spinner-bar {
-    width: 45%;
-    height: 100%;
-    background: linear-gradient(90deg, #0284c7, #38bdf8, #f59e0b);
-    border-radius: 4px;
-    animation: loadingBar 1.2s infinite ease-in-out;
-  }
-
-  @keyframes loadingBar {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(350%); }
-  }
-
-  @keyframes loaderPulse {
-    0%, 100% { transform: scale(1); opacity: 0.9; }
-    50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.6)); }
-  }
-
-  /* Single-page Layout */
   html, body {
-    height: 100%;
+    height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden !important;
     background-color: #060b18;
+    overflow-x: hidden;
   }
 
+  /* Make the container occupy the remaining viewport height cleanly */
   .homepage-single-page {
-    height: calc(100vh - 65px);
+    min-height: calc(100vh - 68px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background-color: #060b18;
     background-image: 
       radial-gradient(circle at 70% 35%, rgba(14, 116, 144, 0.22) 0%, rgba(6, 11, 24, 0) 55%),
@@ -239,38 +152,41 @@
       linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
     background-size: 100% 100%, 44px 44px, 44px 44px;
     background-position: center, -1px -1px, -1px -1px;
-    overflow: hidden;
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
   }
 
   .max-layout-width {
-    max-width: 1350px;
+    max-width: 1400px;
+    width: 100%;
   }
 
   .hero-headline {
-    font-size: clamp(2rem, 3.4vw, 2.9rem);
+    font-size: clamp(2.1rem, 3.8vw, 3.2rem);
     font-weight: 900;
     letter-spacing: -0.5px;
+    line-height: 1.1;
   }
 
   .hero-subtext {
-    max-width: 520px;
-    font-size: 0.92rem;
-    line-height: 1.5;
+    max-width: 540px;
+    font-size: 0.95rem;
+    line-height: 1.6;
     color: #94a3b8 !important;
   }
 
   .chip-circuit-container {
-    height: 280px;
+    height: 290px;
     width: 100%;
-    max-width: 480px;
+    max-width: 500px;
   }
 
   .circuit-wire {
     position: absolute;
     top: 18%;
     bottom: 18%;
-    left: 22%;
-    right: 20%;
+    left: 20%;
+    right: 18%;
     border: 1px solid rgba(56, 189, 248, 0.24);
     border-radius: 20px;
     pointer-events: none;
@@ -280,37 +196,37 @@
   .portal-chip {
     background: #ffffff;
     border-radius: 12px;
-    padding: 0.65rem 0.95rem;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    width: 205px;
+    gap: 0.85rem;
+    width: 220px;
     position: relative;
     box-shadow: 0 0 28px -2px rgba(56, 189, 248, 0.35), 0 8px 16px -3px rgba(0, 0, 0, 0.35);
     user-select: none;
   }
 
   .portal-icon {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.05rem;
     flex-shrink: 0;
   }
 
   .portal-title {
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: #0f172a;
     line-height: 1.15;
   }
 
   .portal-desc {
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     color: #64748b;
     line-height: 1.25;
   }
@@ -319,14 +235,15 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
   }
 
   .workflow-bottom-section {
     border-top: 1px solid rgba(56, 189, 248, 0.12);
-    padding-top: 1rem;
+    padding-top: 1.25rem;
+    margin-top: auto;
   }
 
   .section-tag {
@@ -337,7 +254,7 @@
   }
 
   .section-heading {
-    font-size: 1.55rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.3px;
@@ -345,7 +262,7 @@
 
   .view-link {
     color: #38bdf8;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
     transition: color 0.2s ease;
   }
@@ -358,9 +275,9 @@
     background: rgba(13, 22, 41, 0.85);
     border: 1px solid rgba(56, 189, 248, 0.18);
     border-radius: 14px;
-    padding: 1.2rem 1.3rem;
+    padding: 1.25rem 1.4rem;
     height: 100%;
-    min-height: 140px;
+    min-height: 135px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -374,7 +291,7 @@
   }
 
   .step-num {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: #f59e0b;
     line-height: 1;
@@ -389,36 +306,10 @@
   }
 
   .step-desc {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: #94a3b8;
     margin-bottom: 0;
     line-height: 1.4;
   }
 </style>
-
-
-<script>
-  (function () {
-    const loader = document.getElementById('unitrack-loader');
-    if (!loader) return;
-
-    // Check if the user has already seen the intro loader in this browser session
-    const hasSeenLoader = sessionStorage.getItem('unitrack_intro_loaded');
-
-    if (hasSeenLoader) {
-      // If already visited, remove the loader instantly without waiting
-      loader.remove();
-    } else {
-      // First time visiting the site: mark as seen and show 5-second animation
-      sessionStorage.setItem('unitrack_intro_loaded', 'true');
-
-      setTimeout(() => {
-        loader.classList.add('hidden');
-        setTimeout(() => {
-          loader.remove();
-        }, 650); // Clean up DOM after fade transition completes
-      }, 1000); // 1 seconds
-    }
-  })();
-</script>
 {% endblock %}
