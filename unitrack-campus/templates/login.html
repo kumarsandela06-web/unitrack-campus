@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="kpi-card shadow-sm p-4">
+            <h3 class="fw-bold mb-3 text-center text-light">Sign In</h3>
+            <p class="text-secondary small text-center mb-4">Access your UniTrack dashboard</p>
+            
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                    <label class="kpi-label mb-1">Username</label>
+                    <input type="text" name="username" class="form-control bg-dark text-light border-secondary" required autofocus placeholder="Enter username">
+                </div>
+                <div class="mb-4">
+                    <label class="kpi-label mb-1">Password</label>
+                    <input type="password" name="password" class="form-control bg-dark text-light border-secondary" required placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Sign In</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="{{ url_for('register') }}" class="text-info small text-decoration-none">Don't have an account? Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

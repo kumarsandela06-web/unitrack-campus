@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-lg-6 col-md-8">
+        <div class="kpi-card shadow-sm p-4">
+            <h3 class="fw-bold mb-2 text-center text-light">Student Registration</h3>
+            <p class="text-secondary small text-center mb-4">
+                Fill in your academic profile. A 6-digit OTP will be dispatched to your email.
+            </p>
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <!-- Full Name -->
+                <div class="mb-3">
+                    <label class="kpi-label mb-1">Full Name</label>
+                    <input type="text" name="full_name" class="form-control bg-dark text-light border-secondary" required placeholder="e.g. Rahul Sharma" autofocus>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <!-- Course -->
+                    <div class="col-md-6">
+                        <label class="kpi-label mb-1">Course</label>
+                        <select name="course" class="form-select bg-dark text-light border-secondary" required>
+                            <option value="" disabled selected>Select Course</option>
+                            <option value="B.Tech">B.Tech</option>
+                            <option value="BCA">BCA</option>
+                            <option value="MCA">MCA</option>
+                            <option value="M.Tech">M.Tech</option>
+                            <option value="BBA">BBA</option>
+                            <option value="MBA">MBA</option>
+                        </select>
+                    </div>
+
+                    <!-- Department -->
+                    <div class="col-md-6">
+                        <label class="kpi-label mb-1">Department</label>
+                        <select id="departmentSelect" name="department" class="form-select bg-dark text-light border-secondary" required onchange="toggleCseSpecialization()">
+                            <option value="" disabled selected>Select Department</option>
+                            <option value="CSE">Computer Science & Engineering (CSE)</option>
+                            <option value="ECE">Electronics & Communication (ECE)</option>
+                            <option value="Mechanical">Mechanical Engineering</option>
+                            <option value="Civil">Civil Engineering</option>
+                            <option value="IT">Information Technology (IT)</option>
+                            <option value="Management">Management Studies</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- CSE Specialization (Hidden by default, shows only if CSE is picked) -->
+                <div class="mb-3" id="specializationContainer" style="display: none;">
+                    <label class="kpi-label mb-1 text-info">CSE Specialization</label>
+                    <select id="specializationSelect" name="specialization" class="form-select bg-dark text-light border-info">
+                        <option value="Core CSE">Core CSE</option>
+                        <option value="Artificial Intelligence (AI)">Artificial Intelligence (AI)</option>
+                        <option value="AI & Machine Learning (AIML)">AI & Machine Learning (AIML)</option>
+                        <option value="Data Science">Data Science</option>
+                        <option value="Cyber Security">Cyber Security</option>
+                        <option value="Cloud Computing">Cloud Computing</option>
+                        <option value="IoT & Automation">IoT & Automation</option>
+                    </select>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <!-- Year / Semester -->
+                    <div class="col-md-6">
+                        <label class="kpi-label mb-1">Year / Semester</label>
+                        <select name="year_semester" class="form-select bg-dark text-light border-secondary" required>
+                            <option value="" disabled selected>Select Year & Sem</option>
+                            <option value="1st Year (Sem 1)">1st Year (Sem 1)</option>
+                            <option value="1st Year (Sem 2)">1st Year (Sem 2)</option>
+                            <option value="2nd Year (Sem 3)">2nd Year (Sem 3)</option>
+                            <option value="2nd Year (Sem 4)">2nd Year (Sem 4)</option>
+                            <option value="3rd Year (Sem 5)">3rd Year (Sem 5)</option>
+                            <option value="3rd Year (Sem 6)">3rd Year (Sem 6)</option>
+                            <option value="4th Year (Sem 7)">4th Year (Sem 7)</option>
+                            <option value="4th Year (Sem 8)">4th Year (Sem 8)</option>
+                        </select>
+                    </div>
+
+                    <!-- Mobile No -->
+                    <div class="col-md-6">
+                        <label class="kpi-label mb-1">Mobile Number (10 Digits)</label>
+                        <input type="tel" name="mobile_no" pattern="[0-9]{10}" maxlength="10" class="form-control bg-dark text-light border-secondary" required placeholder="9876543210">
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="kpi-label mb-1">Email Address</label>
+                    <input type="email" name="email" class="form-control bg-dark text-light border-secondary" required placeholder="name@domain.com">
+                </div>
+
+                <!-- Passwords -->
+                <div class="row g-2 mb-4">
+                    <div class="col-md-6">
+                        <label class="kpi-label mb-1">Password</label>
+                        <input type="password" name="password" minlength="6" class="form-control bg-dark text-light border-secondary" required placeholder="••••••••">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="kpi-label mb-1">Confirm Password</label>
+                        <input type="password" name="confirm_password" minlength="6" class="form-control bg-dark text-light border-secondary" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Send OTP to Email</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="{{ url_for('login') }}" class="text-info small text-decoration-none">Already registered? Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleCseSpecialization() {
+    const dept = document.getElementById('departmentSelect').value;
+    const specBox = document.getElementById('specializationContainer');
+    const specSelect = document.getElementById('specializationSelect');
+
+    if (dept === 'CSE') {
+        specBox.style.display = 'block';
+        specSelect.required = true;
+    } else {
+        specBox.style.display = 'none';
+        specSelect.required = false;
+    }
+}
+</script>
+{% endblock %}

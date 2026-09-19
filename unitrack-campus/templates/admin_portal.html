@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4"
+     id="analyticsData"
+     data-category-counts='{{ chart_data.category_counts|tojson }}'
+     data-bldg-counts='{{ chart_data.bldg_counts|tojson }}'
+     data-cost-counts='{{ chart_data.cost_counts|tojson }}'
+     data-pending="{{ metrics['pending'] or 0 }}"
+     data-inprogress="{{ metrics['in_progress'] or 0 }}"
+     data-resolved="{{ metrics['resolved'] or 0 }}">
+
+    <!-- Header & Action Buttons -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-uppercase text-light">Admin Dashboard</h2>
+            <p class="text-secondary small mb-0">System metrics, maintenance costs, and directory management.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <!-- Trigger Modal for Registered Students -->
+            <button type="button" class="btn btn-info btn-sm px-3 rounded-pill fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#allStudentsModal">
+                🎓 View Students ({{ student_records|length }})
+            </button>
+            <!-- Trigger Modal for Staff -->
+            <button type="button" class="btn btn-warning btn-sm px-3 rounded-pill fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#allStaffModal">
+                🛠️ View Staff ({{ department_staff_records|length }})
+            </button>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-outline-light btn-sm px-3 rounded-pill">
+                🗂️ Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- 1. KPI Cards (Total Cost & Avg Cost Included) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2 col-6">
+            <div class="kpi-card text-center py-3">
+                <div class="kpi-num text-info">{{ metrics['total'] or 0 }}</div>
+                <div class="kpi-label">Total Tickets</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card text-center py-3">
+                <div class="kpi-num text-warning">{{ metrics['pending'] or 0 }}</div>
+                <div class="kpi-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card text-center py-3">
+                <div class="kpi-num text-primary">{{ metrics['in_progress'] or 0 }}</div>
+                <div class="kpi-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card text-center py-3">
+                <div class="kpi-num text-success">{{ metrics['resolved'] or 0 }}</div>
+                <div class="kpi-label">Resolved</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card text-center py-3">
+                <div class="kpi-num text-info">₹{{ (metrics['total_cost'] or 0)|int }}</div>
+                <div class="kpi-label">Total Cost</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card text-center py-3">
+                <div class="kpi-num text-info">₹{{ (metrics['avg_cost'] or 0)|int }}</div>
+                <div class="kpi-label">Avg Repair Cost</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Registered Maintenance Tickets Table -->
+    <div class="kpi-card p-0 mb-4 overflow-hidden shadow-sm">
+        <div class="p-3 border-bottom border-secondary border-opacity-25">
+            <h5 class="fw-bold mb-0 text-light">All Registered Maintenance Tickets</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                <thead>
+                    <tr class="text-secondary small text-uppercase">
+                        <th class="ps-3">ID</th>
+                        <th>Student</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Problem Description</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if complaints %}
+                        {% for c in complaints %}
+                        <tr>
+                            <td class="ps-3 fw-bold text-info">{{ c.complaint_id }}</td>
+                            <td>
+                                <div class="text-light fw-bold">{{ c.student_name }}</div>
+                                <small class="text-muted">{{ c.department }}</small>
+                            </td>
+                            <td>{{ c.building }} · Rm {{ c.room_no }}</td>
+                            <td><span class="badge bg-secondary">{{ c.category }}</span></td>
+                            <td style="max-width: 260px;">
+                                <div class="text-light small text-wrap text-break">{{ c.problem }}</div>
+                            </td>
+                            <td>
+                                <span class="badge {% if c.priority == 'High' %}bg-danger{% elif c.priority == 'Medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ c.priority }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if c.status == 'Resolved' %}bg-success{% elif c.status == 'In Progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ c.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-secondary">No tickets submitted yet.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. Charts -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="chart-panel">
+                <div class="chart-header">Complaints by Category</div>
+                <canvas id="categoryChart" height="220"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-panel">
+                <div class="chart-header">Status Distribution</div>
+                <div style="max-width: 260px; margin: 0 auto;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="chart-panel">
+                <div class="chart-header">Repair Cost by Category</div>
+                <canvas id="costChart" height="110"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================= -->
+<!-- MODAL 1: VIEW ALL REGISTERED STUDENTS                              -->
+<!-- ================================================================= -->
+<div class="modal fade" id="allStudentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-dark border border-secondary text-light">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold">🎓 Registered Students Directory</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="text-secondary small text-uppercase">
+                                <th class="ps-3 py-3">Student Name</th>
+                                <th>Course & Department</th>
+                                <th>Tickets Filed</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if student_records %}
+                                {% for item in student_records %}
+                                {% set s = item.user %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <span class="fw-bold text-light">{{ s.username }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ s.course or 'N/A' }}</span>
+                                        <span class="badge bg-dark border border-secondary text-info ms-1">{{ s.department or 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-dark border border-info text-info">{{ item.ticket_count }} Tickets</span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#studentDetailModal{{ s.id }}">
+                                            View Profile
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-secondary">No students registered yet.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================= -->
+<!-- MODAL 2: VIEW STAFF DIRECTORY                                     -->
+<!-- ================================================================= -->
+<div class="modal fade" id="allStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-dark border border-secondary text-light">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold">🛠️ Maintenance Staff Directory</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="text-secondary small text-uppercase">
+                                <th class="ps-3 py-3">Department</th>
+                                <th>Staff Name</th>
+                                <th>Assigned</th>
+                                <th>Resolved</th>
+                                <th class="text-end pe-3">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if department_staff_records %}
+                                {% for d in department_staff_records %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <span class="badge bg-info text-dark fw-bold">{{ d.dept_name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-light">{{ d.staff.username }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ d.assigned_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ d.resolved_count }}</span>
+                                    </td>
+                                    <td class="text-end pe-3 text-secondary small">
+                                        ✉ {{ d.staff.email }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-secondary">No department staff registered.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================= -->
+<!-- INDIVIDUAL STUDENT PROFILE MODALS                                 -->
+<!-- ================================================================= -->
+{% for item in student_records %}
+{% set s = item.user %}
+<div class="modal fade" id="studentDetailModal{{ s.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-secondary text-light">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold">🎓 Student Profile Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-info text-dark d-flex align-items-center justify-content-center fw-bold fs-4 me-3" style="width: 50px; height: 50px;">
+                        {{ s.username[:1]|upper }}
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-light">{{ s.username }}</h5>
+                        <span class="badge bg-secondary">Student Account</span>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded bg-black bg-opacity-50 border border-secondary border-opacity-25">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Course</div>
+                            <div class="fw-bold text-light">{{ s.course or 'N/A' }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Department</div>
+                            <div class="fw-bold text-info">{{ s.department or 'N/A' }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Specialization</div>
+                            <div class="text-light">{{ s.specialization if s.specialization and s.specialization != 'None' else 'Core / Standard' }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Year / Semester</div>
+                            <div class="text-light">{{ s.year_semester or 'N/A' }}</div>
+                        </div>
+                        <div class="col-12 border-top border-secondary border-opacity-25 pt-2">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Email Address</div>
+                            <div class="text-light">✉ {{ s.email }}</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Mobile Number</div>
+                            <div class="text-light">📞 {{ s.mobile_no or 'N/A' }}</div>
+                        </div>
+                        <div class="col-12 border-top border-secondary border-opacity-25 pt-2">
+                            <div class="kpi-label text-secondary" style="font-size: 10px;">Tickets Submitted</div>
+                            <div class="text-info fw-bold">{{ item.ticket_count }} total tickets</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    var dataElem = document.getElementById('analyticsData');
+    var catCounts = JSON.parse(dataElem.getAttribute('data-category-counts') || '[]');
+    var costCounts = JSON.parse(dataElem.getAttribute('data-cost-counts') || '[]');
+    var pendingVal = Number(dataElem.getAttribute('data-pending') || 0);
+    var inProgressVal = Number(dataElem.getAttribute('data-inprogress') || 0);
+    var resolvedVal = Number(dataElem.getAttribute('data-resolved') || 0);
+
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = '#17365d';
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Electrical', 'Furniture', 'Plumbing', 'IT', 'Internet', 'Cleaning', 'AC/Cooling'],
+            datasets: [{
+                data: catCounts,
+                backgroundColor: ['#38bdf8', '#f59e0b', '#10b981', '#ef4444', '#06b6d4', '#a855f7', '#fbbf24']
+            }]
+        },
+        options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Pending', 'In Progress', 'Resolved'],
+            datasets: [{
+                data: [pendingVal, inProgressVal, resolvedVal],
+                backgroundColor: ['#f97316', '#38bdf8', '#10b981'],
+                borderWidth: 2,
+                borderColor: '#0d223a'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('costChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Electrical', 'Furniture', 'Plumbing', 'IT', 'Internet', 'Cleaning', 'AC/Cooling'],
+            datasets: [{ data: costCounts, backgroundColor: '#10b981' }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: function(v) { return '₹' + v; } } } }
+        }
+    });
+</script>
+{% endblock %}

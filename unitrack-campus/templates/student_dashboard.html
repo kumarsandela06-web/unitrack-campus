@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-light">Student Dashboard</h2>
+            <p class="text-secondary small mb-0">Track your reported campus tickets and manage your profile details.</p>
+        </div>
+        <a href="{{ url_for('report_problem') }}" class="btn-issue text-decoration-none">+ Report New Ticket</a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Profile Card -->
+        <div class="col-lg-4 col-md-5">
+            <div class="kpi-card shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+                    <div class="rounded-circle bg-info text-dark d-flex align-items-center justify-content-center fw-bold fs-4 me-3" style="width: 52px; height: 52px;">
+                        {{ current_user.username[:1]|upper }}
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-light mb-0">{{ current_user.username }}</h5>
+                        <span class="badge bg-secondary" style="font-size: 11px;">Student Account</span>
+                    </div>
+                </div>
+
+                <div class="kpi-label mb-2 text-info">Academic & Personal Profile</div>
+
+                <div class="mb-2">
+                    <small class="text-secondary d-block" style="font-size: 11px; text-transform: uppercase;">Course & Department</small>
+                    <span class="text-light fw-semibold">{{ current_user.course }} &middot; {{ current_user.department }}</span>
+                </div>
+
+                {% if current_user.department == 'CSE' and current_user.specialization and current_user.specialization != 'None' %}
+                <div class="mb-2">
+                    <small class="text-secondary d-block" style="font-size: 11px; text-transform: uppercase;">Specialization</small>
+                    <span class="text-info fw-semibold">{{ current_user.specialization }}</span>
+                </div>
+                {% endif %}
+
+                <div class="mb-2">
+                    <small class="text-secondary d-block" style="font-size: 11px; text-transform: uppercase;">Year / Semester</small>
+                    <span class="text-light fw-semibold">{{ current_user.year_semester or 'Not Specified' }}</span>
+                </div>
+
+                <div class="mb-2">
+                    <small class="text-secondary d-block" style="font-size: 11px; text-transform: uppercase;">Mobile Number</small>
+                    <span class="text-light fw-semibold">{{ current_user.mobile_no or 'Not Provided' }}</span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-secondary d-block" style="font-size: 11px; text-transform: uppercase;">Registered Email (Locked)</small>
+                    <span class="text-light fw-semibold">{{ current_user.email }}</span>
+                </div>
+
+                <div class="pt-3 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-outline-info btn-sm w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        Edit Profile
+                    </button>
+                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-secondary btn-sm w-100 text-light">
+                        Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Summary KPI Cards -->
+        <div class="col-lg-8 col-md-7">
+            <div class="row g-3 mb-4">
+                <div class="col-4">
+                    <div class="kpi-card text-center py-3">
+                        <div class="kpi-num text-info">{{ my_complaints|length }}</div>
+                        <div class="kpi-label">Tickets Filed</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="kpi-card text-center py-3">
+                        <div class="kpi-num text-warning">
+                            {{ my_complaints|selectattr('status', 'equalto', 'In Progress')|list|length }}
+                        </div>
+                        <div class="kpi-label">In Progress</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="kpi-card text-center py-3">
+                        <div class="kpi-num text-success">
+                            {{ my_complaints|selectattr('status', 'equalto', 'Resolved')|list|length }}
+                        </div>
+                        <div class="kpi-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raised Tickets Table -->
+            <div class="kpi-card p-0 overflow-hidden shadow-sm">
+                <div class="p-3 border-bottom border-secondary border-opacity-25">
+                    <h5 class="fw-bold mb-0 text-light">My Submitted Issues</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="text-secondary small text-uppercase">
+                                <th class="ps-3 py-3">ID</th>
+                                <th class="py-3">Issue</th>
+                                <th class="py-3">Category</th>
+                                <th class="py-3">Location</th>
+                                <th class="py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if my_complaints %}
+                                {% for c in my_complaints %}
+                                <tr>
+                                    <td class="ps-3 fw-bold text-info">{{ c.complaint_id }}</td>
+                                    <td><span class="text-light">{{ c.problem }}</span></td>
+                                    <td><span class="badge bg-secondary">{{ c.category }}</span></td>
+                                    <td>{{ c.building }} &middot; Rm {{ c.room_no }}</td>
+                                    <td>
+                                        <span class="badge {% if c.status == 'Resolved' %}bg-success{% elif c.status == 'In Progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                            {{ c.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-secondary">You haven't reported any issues yet.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-secondary text-light">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold">Edit Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_student_profile') }}">
+                <div class="modal-body">
+                    <!-- Locked Full Name -->
+                    <div class="mb-3">
+                        <label class="kpi-label mb-1 text-secondary">Full Name (Locked)</label>
+                        <input type="text" class="form-control bg-dark text-muted border-secondary" value="{{ current_user.username }}" disabled>
+                    </div>
+
+                    <!-- Course & Department -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="kpi-label mb-1">Course</label>
+                            <select name="course" class="form-select bg-dark text-light border-secondary" required>
+                                {% for crs in ['B.Tech', 'BCA', 'MCA', 'M.Tech', 'BBA', 'MBA'] %}
+                                    <option value="{{ crs }}" {% if current_user.course == crs %}selected{% endif %}>{{ crs }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="kpi-label mb-1">Department</label>
+                            <select id="editDeptSelect" name="department" class="form-select bg-dark text-light border-secondary" required onchange="toggleEditCse()">
+                                {% for d in ['CSE', 'ECE', 'Mechanical', 'Civil', 'IT', 'Management'] %}
+                                    <option value="{{ d }}" {% if current_user.department == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- CSE Specialization Container -->
+                    <div class="mb-3 {% if current_user.department != 'CSE' %}d-none{% endif %}" id="editSpecializationBox">
+                        <label class="kpi-label mb-1 text-info">CSE Specialization</label>
+                        <select name="specialization" id="editSpecSelect" class="form-select bg-dark text-light border-info">
+                            {% for spec in ['Core CSE', 'Artificial Intelligence (AI)', 'AI & Machine Learning (AIML)', 'Data Science', 'Cyber Security', 'Cloud Computing', 'IoT & Automation'] %}
+                                <option value="{{ spec }}" {% if current_user.specialization == spec %}selected{% endif %}>{{ spec }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Year & Semester -->
+                    <div class="mb-3">
+                        <label class="kpi-label mb-1">Year / Semester</label>
+                        <select name="year_semester" class="form-select bg-dark text-light border-secondary" required>
+                            {% for ys in ['1st Year (Sem 1)', '1st Year (Sem 2)', '2nd Year (Sem 3)', '2nd Year (Sem 4)', '3rd Year (Sem 5)', '3rd Year (Sem 6)', '4th Year (Sem 7)', '4th Year (Sem 8)'] %}
+                                <option value="{{ ys }}" {% if current_user.year_semester == ys %}selected{% endif %}>{{ ys }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Mobile Number -->
+                    <div class="mb-3">
+                        <label class="kpi-label mb-1">Mobile Number (10 digits)</label>
+                        <input type="tel" name="mobile_no" pattern="[0-9]{10}" maxlength="10" class="form-control bg-dark text-light border-secondary" value="{{ current_user.mobile_no or '' }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info btn-sm fw-bold px-3">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleEditCse() {
+    const dept = document.getElementById('editDeptSelect').value;
+    const specBox = document.getElementById('editSpecializationBox');
+    const specSelect = document.getElementById('editSpecSelect');
+
+    if (dept === 'CSE') {
+        specBox.classList.remove('d-none');
+        specSelect.required = true;
+    } else {
+        specBox.classList.add('d-none');
+        specSelect.required = false;
+    }
+}
+</script>
+{% endblock %}

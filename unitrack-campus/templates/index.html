@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- UniTrack Fullscreen Preloader -->
+<div id="unitrack-loader">
+  <div class="loader-content text-center">
+    <div class="logo-pulse mb-3">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="UniTrack Logo" class="loader-logo" onerror="this.style.display='none'; document.getElementById('loader-fallback-icon').style.display='inline-block';">
+      <div id="loader-fallback-icon" class="fallback-icon" style="display: none;">🎓</div>
+    </div>
+    <h3 class="loader-brand mb-1">UniTrack</h3>
+    <p class="loader-tagline mb-3">Smart Campus Portal</p>
+    <div class="spinner-track">
+      <div class="spinner-bar"></div>
+    </div>
+  </div>
+</div>
+
+<div class="homepage-single-page px-4 px-lg-5">
+  <div class="container-fluid max-layout-width d-flex flex-column h-100 justify-content-evenly py-2">
+    
+    <!-- Top Hero Row -->
+    <div class="row align-items-center justify-content-between g-4 mx-0">
+      
+      <!-- Left Column: Typography -->
+      <div class="col-lg-6 ps-lg-3">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(56, 189, 248, 0.25);">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background-color: #22c55e;"></span>
+          <span class="text-uppercase fw-bold" style="color: #38bdf8; font-size: 0.72rem; letter-spacing: 1.5px;">Smarter Campus Brighter Future</span>
+        </div>
+
+        <h1 class="hero-headline text-white lh-1 mb-3">
+          EVERY REQUEST,<br>
+          <span style="display: inline-block; position: relative;">
+            EVERY PRIORITY
+            <span style="position: absolute; left: 103%; top: 45%; width: 46px; height: 3px; background: #f59e0b; border-radius: 2px;"></span>
+          </span><br>
+          ORGANIZED, TRACKED, RESOLVED.
+        </h1>
+
+        <p class="hero-subtext text-secondary mb-0">
+          UniTrack helps students, departments, and administrators connect, raise maintenance requests, track ticket progress in real-time, and get campus solutions faster.
+        </p>
+      </div>
+
+      <!-- Right Column: 4 Portal Chips -->
+      <div class="col-lg-6 d-flex justify-content-center pe-lg-3">
+        <div class="chip-circuit-container position-relative d-flex flex-column justify-content-between p-2">
+
+          <!-- Outer Circuit Loop Wire -->
+          <div class="circuit-wire"></div>
+
+          <!-- Top Row Chips -->
+          <div class="d-flex justify-content-between align-items-start gap-3 position-relative z-1">
+            <div class="portal-chip">
+              <span class="portal-dot" style="background-color: #3b82f6;"></span>
+              <div class="portal-icon" style="background-color: #2563eb;">👤</div>
+              <div>
+                <div class="portal-title">Students</div>
+                <div class="portal-desc">Raise & track requests</div>
+              </div>
+            </div>
+
+            <div class="portal-chip mt-2">
+              <span class="portal-dot" style="background-color: #8b5cf6;"></span>
+              <div class="portal-icon" style="background-color: #7c3aed;">🏛️</div>
+              <div>
+                <div class="portal-title">Departments</div>
+                <div class="portal-desc">Manage maintenance tasks</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row Chips -->
+          <div class="d-flex justify-content-between align-items-end gap-3 position-relative z-1">
+            <div class="portal-chip">
+              <span class="portal-dot" style="background-color: #f97316;"></span>
+              <div class="portal-icon" style="background-color: #ea580c;">🎓</div>
+              <div>
+                <div class="portal-title">Campus</div>
+                <div class="portal-desc">A smarter environment</div>
+              </div>
+            </div>
+
+            <div class="portal-chip mb-2">
+              <span class="portal-dot" style="background-color: #10b981;"></span>
+              <div class="portal-icon" style="background-color: #059669;">🛡️</div>
+              <div>
+                <div class="portal-title">Admin</div>
+                <div class="portal-desc">Monitor, assign & solve</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Workflow Row -->
+    <div class="workflow-bottom-section">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div class="section-tag">WORKFLOW</div>
+          <h3 class="section-heading mb-0">From complaint to closure</h3>
+        </div>
+        <a href="{{ url_for('browse_problems') }}" class="view-link text-decoration-none">View analysis &rarr;</a>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-6 col-lg-3">
+          <div class="workflow-card">
+            <div class="step-num">01</div>
+            <h5 class="step-title">Report</h5>
+            <p class="step-desc">Student records the issue with location and priority.</p>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="workflow-card">
+            <div class="step-num">02</div>
+            <h5 class="step-title">Prioritise</h5>
+            <p class="step-desc">High-impact issues are clearly visible to departments.</p>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="workflow-card">
+            <div class="step-num">03</div>
+            <h5 class="step-title">Track</h5>
+            <p class="step-desc">Staff move tickets from Pending to In Progress.</p>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="workflow-card">
+            <div class="step-num">04</div>
+            <h5 class="step-title">Resolve</h5>
+            <p class="step-desc">Repair details and cost are stored for analysis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* Loader Overlay */
+  #unitrack-loader {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #060b18;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+
+  #unitrack-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .loader-logo {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    animation: loaderPulse 1.8s infinite ease-in-out;
+  }
+
+  .fallback-icon {
+    font-size: 3rem;
+    animation: loaderPulse 1.8s infinite ease-in-out;
+  }
+
+  .loader-brand {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+
+  .loader-tagline {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #38bdf8;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .spinner-track {
+    width: 160px;
+    height: 4px;
+    background: rgba(56, 189, 248, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .spinner-bar {
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(90deg, #0284c7, #38bdf8, #f59e0b);
+    border-radius: 4px;
+    animation: loadingBar 1.2s infinite ease-in-out;
+  }
+
+  @keyframes loadingBar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+
+  @keyframes loaderPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.6)); }
+  }
+
+  /* Single-page Layout */
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
+    background-color: #060b18;
+  }
+
+  .homepage-single-page {
+    height: calc(100vh - 65px);
+    background-color: #060b18;
+    background-image: 
+      radial-gradient(circle at 70% 35%, rgba(14, 116, 144, 0.22) 0%, rgba(6, 11, 24, 0) 55%),
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 100% 100%, 44px 44px, 44px 44px;
+    background-position: center, -1px -1px, -1px -1px;
+    overflow: hidden;
+  }
+
+  .max-layout-width {
+    max-width: 1350px;
+  }
+
+  .hero-headline {
+    font-size: clamp(2rem, 3.4vw, 2.9rem);
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-subtext {
+    max-width: 520px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #94a3b8 !important;
+  }
+
+  .chip-circuit-container {
+    height: 280px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .circuit-wire {
+    position: absolute;
+    top: 18%;
+    bottom: 18%;
+    left: 22%;
+    right: 20%;
+    border: 1px solid rgba(56, 189, 248, 0.24);
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .portal-chip {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 0.65rem 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 205px;
+    position: relative;
+    box-shadow: 0 0 28px -2px rgba(56, 189, 248, 0.35), 0 8px 16px -3px rgba(0, 0, 0, 0.35);
+    user-select: none;
+  }
+
+  .portal-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .portal-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.15;
+  }
+
+  .portal-desc {
+    font-size: 0.68rem;
+    color: #64748b;
+    line-height: 1.25;
+  }
+
+  .portal-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+
+  .workflow-bottom-section {
+    border-top: 1px solid rgba(56, 189, 248, 0.12);
+    padding-top: 1rem;
+  }
+
+  .section-tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #64748b;
+    letter-spacing: 1.5px;
+  }
+
+  .section-heading {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+
+  .view-link {
+    color: #38bdf8;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .view-link:hover {
+    color: #7dd3fc;
+  }
+
+  .workflow-card {
+    background: rgba(13, 22, 41, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 14px;
+    padding: 1.2rem 1.3rem;
+    height: 100%;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .workflow-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+
+  .step-num {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f59e0b;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+
+  .step-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+  }
+
+  .step-desc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 0;
+    line-height: 1.4;
+  }
+</style>
+
+<script>
+  (function () {
+    const loader = document.getElementById('unitrack-loader');
+    if (!loader) return;
+
+    // Check if the user has already seen the intro loader in this browser session
+    const hasSeenLoader = sessionStorage.getItem('unitrack_intro_loaded');
+
+    if (hasSeenLoader) {
+      // If already visited, remove the loader instantly without waiting
+      loader.remove();
+    } else {
+      // First time visiting the site: mark as seen and show 5-second animation
+      sessionStorage.setItem('unitrack_intro_loaded', 'true');
+
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        setTimeout(() => {
+          loader.remove();
+        }, 650); // Clean up DOM after fade transition completes
+      }, 3000); // 3 seconds
+    }
+  })();
+</script>
+{% endblock %}

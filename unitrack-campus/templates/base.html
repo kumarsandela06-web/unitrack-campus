@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniTrack - Maintenance Control System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #0b1727;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background-color: #0f1f38 !important;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        .kpi-card {
+            background: #112240;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            border-color: #38bdf8;
+        }
+
+        .kpi-num {
+            font-size: 1.85rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+
+        .chart-panel {
+            background: #112240;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .chart-header {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .table-dark {
+            --bs-table-bg: transparent;
+            --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+            border-color: #1e3a5f;
+        }
+
+        .btn-issue {
+            background-color: #f59e0b;
+            color: #0b1727;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 0.4rem 1.2rem;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-issue:hover {
+            background-color: #d97706;
+            color: #000;
+        }
+
+        .nav-link.active-link {
+            background-color: rgba(56, 189, 248, 0.15);
+            color: #38bdf8 !important;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4 py-2 sticky-top">
+        <div class="container-fluid">
+            <!-- Brand / Logo -->
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='logo.png') }}" 
+                     alt="UniTrack Logo" 
+                     style="height: 38px; width: 38px; object-fit: contain; border-radius: 6px;">
+                <span class="fs-5 lh-1">
+                    <span style="color: #ffffff;">Uni</span><span style="color: #38bdf8;">Track</span>
+                </span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navContent">
+                <!-- Center Links -->
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3 rounded-pill {% if request.endpoint == 'home' %}active-link{% endif %}" href="{{ url_for('home') }}">
+                            Home
+                        </a>
+                    </li>
+
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            {% if current_user.role == 'Admin' %}
+                                <a class="nav-link text-light px-3 rounded-pill {% if request.endpoint == 'admin_portal' %}active-link{% endif %}" href="{{ url_for('admin_portal') }}">
+                                    Dashboard
+                                </a>
+                            {% elif current_user.role == 'Department' %}
+                                <a class="nav-link text-light px-3 rounded-pill {% if request.endpoint == 'department_portal' %}active-link{% endif %}" href="{{ url_for('department_portal') }}">
+                                    Dashboard
+                                </a>
+                            {% else %}
+                                <a class="nav-link text-light px-3 rounded-pill {% if request.endpoint == 'student_dashboard' %}active-link{% endif %}" href="{{ url_for('student_dashboard') }}">
+                                    Dashboard
+                                </a>
+                            {% endif %}
+                        </li>
+
+                        {% if current_user.role != 'Admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link text-light px-3 rounded-pill {% if request.endpoint == 'browse_problems' %}active-link{% endif %}" href="{{ url_for('browse_problems') }}">
+                                All Tickets
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+
+                <!-- Right Side Controls -->
+                <div class="d-flex align-items-center gap-3">
+                    {% if current_user.is_authenticated %}
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-secondary small">User: <strong class="text-light">{{ current_user.username }}</strong></span>
+                            <span class="badge bg-secondary" style="font-size: 10px;">{{ current_user.role }}</span>
+                        </div>
+
+                        <a href="{{ url_for('change_password') }}" class="text-secondary text-decoration-none small">Password</a>
+                        <a href="{{ url_for('logout') }}" class="text-danger text-decoration-none small fw-bold">Logout</a>
+
+                        {% if current_user.role == 'Student' %}
+                            <a href="{{ url_for('report_problem') }}" class="btn btn-issue btn-sm text-decoration-none">+ Report Issue</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-light rounded-pill px-3">Sign In</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary rounded-pill px-3">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FLASH NOTIFICATIONS -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show border-0 shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- MAIN INJECTED CONTENT -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

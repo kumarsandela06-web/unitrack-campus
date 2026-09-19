@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-uppercase text-light">Department Portal</h2>
+            <p class="text-secondary small mb-0">
+                Department: <span class="badge bg-info text-dark fw-bold">{{ current_user.department_name or 'General' }}</span> | Logged in as: <span class="text-light fw-semibold">{{ current_user.username }}</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-secondary py-2 px-3 align-self-center">
+                Total Assigned: {{ complaints|length }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Assigned Complaints Table Card -->
+    <div class="kpi-card p-0 overflow-hidden shadow-sm">
+        <div class="p-3 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-light">Assigned Work Tickets</h5>
+            <small class="text-secondary">Resolved tickets are automatically locked from further edits</small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                <thead>
+                    <tr class="text-secondary small text-uppercase">
+                        <th class="ps-3 py-3">Ticket ID</th>
+                        <th class="py-3">Student / Course</th>
+                        <th class="py-3">Location</th>
+                        <th class="py-3">Issue Description</th>
+                        <th class="py-3">Priority</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Repair Cost</th>
+                        <th class="text-end pe-3 py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if complaints %}
+                        {% for c in complaints %}
+                        <tr>
+                            <td class="ps-3 fw-bold text-info">{{ c.complaint_id }}</td>
+                            <td>
+                                <div class="text-light fw-semibold">{{ c.student_name }}</div>
+                                <small class="text-muted">{{ c.department }}</small>
+                            </td>
+                            <td>{{ c.building }} · Rm {{ c.room_no }}</td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 220px;" title="{{ c.problem }}">
+                                    {{ c.problem }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge {% if c.priority == 'High' %}bg-danger{% elif c.priority == 'Medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ c.priority }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if c.status == 'Resolved' %}bg-success{% elif c.status == 'In Progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ c.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if c.maintenance and c.maintenance.repair_cost %}
+                                    <span class="text-light fw-bold">₹{{ c.maintenance.repair_cost|int }}</span>
+                                {% else %}
+                                    <span class="text-secondary">₹0</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                {% if c.status == 'Resolved' %}
+                                    <span class="badge bg-dark border border-success text-success px-3 py-2">
+                                        ✓ Locked (Completed)
+                                    </span>
+                                {% else %}
+                                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#updateModal{{ c.id }}">
+                                        Update Status
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        {% if c.status != 'Resolved' %}
+                        <!-- Update Action Modal -->
+                        <div class="modal fade" id="updateModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-dark border border-secondary text-light">
+                                    <div class="modal-header border-secondary border-opacity-25">
+                                        <h5 class="modal-title fw-bold">Update Ticket: {{ c.complaint_id }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('update_status') }}">
+                                        <input type="hidden" name="complaint_id" value="{{ c.id }}">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="kpi-label mb-1">Update Status</label>
+                                                <select name="status" class="form-select bg-dark text-light border-secondary" required>
+                                                    <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                    <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                    <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Resolved (Locks ticket)</option>
+                                                </select>
+                                                <small class="text-warning d-block mt-1" style="font-size: 11px;">
+                                                    * Marking as "Resolved" closes this ticket permanently.
+                                                </small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="kpi-label mb-1">Technician / Staff Name</label>
+                                                <input type="text" name="staff_name" value="{{ c.maintenance.staff_name if c.maintenance and c.maintenance.staff_name != 'Unassigned' else current_user.username }}" class="form-control bg-dark text-light border-secondary" required>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="kpi-label mb-1">Repair Cost (INR)</label>
+                                                <input type="number" step="0.01" name="cost" value="{{ c.maintenance.repair_cost if c.maintenance else 0.0 }}" class="form-control bg-dark text-light border-secondary" required placeholder="0.00">
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="kpi-label mb-1">Action Notes / Remarks</label>
+                                                <textarea name="remarks" rows="3" class="form-control bg-dark text-light border-secondary" placeholder="Details of the fix...">{{ c.maintenance.action_taken if c.maintenance else '' }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-secondary border-opacity-25">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-warning btn-sm fw-bold px-3 text-dark">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-secondary">
+                                No tickets currently assigned to the {{ current_user.department_name or 'General' }} department.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
