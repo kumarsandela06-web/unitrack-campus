@@ -30,9 +30,19 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # -----------------------------------------------------------------------------
 # APP CONFIGURATION & REAL GMAIL SMTP (PORT 465 SSL)
 # -----------------------------------------------------------------------------
-app = Flask(__name__)
+import os
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(base_dir, 'templates'),
+    static_folder=os.path.join(base_dir, 'static'),
+    static_url_path='/static'
+)
+
 app.config['SECRET_KEY'] = 'UniTrack-super-secret-key-2026'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///campus_maintenance.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(base_dir, 'campus_maintenance.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Gmail SMTP Configuration
@@ -55,7 +65,6 @@ login_manager.login_view = 'login'
 BUILDINGS = ['Block A', 'Block B', 'Block C', 'Computer Lab', 'Library', 'Hostel Block']
 CATEGORIES = ['Electrical', 'Furniture', 'Plumbing', 'IT', 'Internet', 'Cleaning', 'AC/Cooling']
 STATUSES = ['Pending', 'In Progress', 'Resolved']
-
 # -----------------------------------------------------------------------------
 # DATABASE MODELS
 # -----------------------------------------------------------------------------
