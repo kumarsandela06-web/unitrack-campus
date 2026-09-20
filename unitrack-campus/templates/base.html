@@ -95,6 +95,7 @@
             font-weight: 600;
         }
 
+        /* Prevents any third-party or residual script from locking the UI */
         #preloader, .preloader, #unitrack-loader {
             display: none !important;
             visibility: hidden !important;
@@ -172,17 +173,21 @@
                             <a href="{{ url_for('report_problem') }}" class="btn btn-issue btn-sm text-decoration-none">+ Report Issue</a>
                         {% endif %}
                     {% else %}
-                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-semibold text-white" style="font-size: 0.8rem;">
-                            Student Signup
+                        <!-- 1. Admin Login -->
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.8rem;">
+                            Admin Login
                         </a>
-                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.8rem;">
-                            Student Login
-                        </a>
+                        <!-- 2. Staff Login -->
                         <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.8rem;">
                             Staff Login
                         </a>
-                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.8rem;">
-                            Admin Login
+                        <!-- 3. Student Login -->
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.8rem;">
+                            Student Login
+                        </a>
+                        <!-- 4. Student Signup -->
+                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-semibold text-white" style="font-size: 0.8rem;">
+                            Student Signup
                         </a>
                     {% endif %}
                 </div>
